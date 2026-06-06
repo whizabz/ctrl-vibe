@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vibe Coding Foundations</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/duotone/style.css" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+  :root {
+    --canvas:   #f5f4ed;
+    --card:     #eeeade;
+    --card-alt: #e8e6dc;
+    --border:   #d6d3c8;
+    --ink:      #1B365D;
+    --ink-mid:  #2e4f7c;
+    --ink-soft: #5a7299;
+    --muted:    #8a8478;
+    --serif:    'EB Garamond', Charter, 'Bitstream Charter', Georgia, serif;
+    --radius:   14px;
+    --shadow:   0 2px 12px rgba(27,54,93,.08), 0 1px 3px rgba(27,54,93,.05);
+    --shadow-hover: 0 6px 28px rgba(27,54,93,.16), 0 2px 6px rgba(27,54,93,.09);
+    --t: 200ms ease;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--canvas);
+    font-family: var(--serif);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 96px 32px 48px;
+  }
+
+  /* ── Header ── */
+  .site-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 50;
+    background: var(--canvas);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 22px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .site-logo {
+    font-family: 'EB Garamond', Charter, Georgia, serif;
+    font-size: 13.5px;
+    font-weight: 500;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--ink);
+    user-select: none;
+    text-decoration: none;
+  }
+
+  .site-nav { display: flex; align-items: center; gap: 2px; }
+
+  .site-nav a {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    transition: color var(--t), border-color var(--t);
+    letter-spacing: .01em;
+  }
+
+  .site-nav a:hover { color: var(--ink); }
+
+  .site-nav a.active {
+    color: var(--ink);
+    border-color: var(--border);
+  }
+
+  /* ── Bento grid ── */
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, auto);
+    gap: 14px;
+    max-width: 1160px;
+    width: 100%;
+  }
+
+  /* Explicit placement — hero is cols 2-3, row 2 = dead centre */
+  .c-context  { grid-column: 1; grid-row: 1; }
+  .c-llm      { grid-column: 2; grid-row: 1; }
+  .c-genai    { grid-column: 3; grid-row: 1; }
+  .c-agent    { grid-column: 4; grid-row: 1; }
+
+  .c-model    { grid-column: 1; grid-row: 2; }
+  .c-hero     { grid-column: 2 / 4; grid-row: 2; }   /* ← centred span */
+  .c-harness  { grid-column: 4; grid-row: 2; }
+
+  .c-markdown { grid-column: 1; grid-row: 3; }
+  .c-mcp      { grid-column: 2; grid-row: 3; }
+  .c-skill    { grid-column: 3; grid-row: 3; }
+  .c-designmd { grid-column: 4; grid-row: 3; }
+
+  /* ── Card base ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 26px 24px 22px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: box-shadow var(--t), transform var(--t), background var(--t);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+    background: var(--card-alt);
+  }
+
+  .card:hover .card-hint { opacity: 1; }
+
+  .card-hint {
+    position: absolute;
+    top: 14px; right: 16px;
+    font-size: 11px;
+    letter-spacing: .06em;
+    color: var(--ink-soft);
+    opacity: 0;
+    transition: opacity var(--t);
+    text-transform: uppercase;
+    font-style: italic;
+  }
+
+  /* ── Phosphor icon badge ── */
+  .card-icon {
+    width: 46px; height: 46px;
+    border-radius: 10px;
+    background: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-bottom: 4px;
+  }
+
+  .card-icon i {
+    font-size: 22px;
+    color: var(--canvas);
+    /* duotone secondary colour via CSS custom property */
+    --ph-duotone-opacity: 0.35;
+  }
+
+  /* ── Card text ── */
+  .card-title {
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.15;
+    color: var(--ink);
+  }
+
+  .card-subtitle {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  .card-desc {
+    font-size: 15px;
+    color: var(--ink-mid);
+    line-height: 1.5;
+  }
+
+
+  /* ── Hero card ── */
+  .c-hero {
+    background: var(--ink);
+    cursor: default;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 32px;
+    min-height: 180px;
+  }
+
+  .c-hero:hover { transform: none; box-shadow: var(--shadow); }
+
+  .hero-title {
+    font-size: 40px;
+    font-weight: 500;
+    line-height: 1.08;
+    color: var(--canvas);
+    letter-spacing: -.01em;
+  }
+
+  .hero-title span {
+    display: block;
+    font-size: 12px;
+    font-style: italic;
+    color: #7fa3c8;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    font-weight: 400;
+    margin-top: 10px;
+  }
+
+  /* ── Modal ── */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(27,54,93,.32);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    opacity: 0; pointer-events: none;
+    transition: opacity 250ms ease;
+    padding: 24px;
+  }
+
+  .modal-backdrop.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    max-width: 560px; width: 100%;
+    box-shadow: 0 24px 64px rgba(27,54,93,.2);
+    padding: 44px 48px 40px;
+    position: relative;
+    transform: translateY(14px) scale(.97);
+    transition: transform 300ms cubic-bezier(.16,1,.3,1);
+  }
+
+  .modal-backdrop.open .modal { transform: translateY(0) scale(1); }
+
+  .modal-icon {
+    width: 54px; height: 54px;
+    border-radius: 12px;
+    background: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .modal-icon i {
+    font-size: 26px;
+    color: var(--canvas);
+    --ph-duotone-opacity: 0.35;
+  }
+
+  .modal-eyebrow {
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .modal-title {
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+
+  .modal-body {
+    font-size: 17px;
+    line-height: 1.62;
+    color: var(--ink-mid);
+  }
+
+  .modal-body p + p { margin-top: 12px; }
+  .modal-body strong { color: var(--ink); font-weight: 500; }
+
+  .modal-close {
+    position: absolute; top: 20px; right: 20px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--card);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    color: var(--muted);
+    transition: background var(--t), color var(--t);
+  }
+
+  .modal-close:hover { background: var(--ink); color: var(--canvas); }
+
+
+  /* ── Responsive ── */
+  @media (max-width: 880px) {
+    .bento { grid-template-columns: repeat(2, 1fr); }
+    .c-context, .c-llm, .c-genai, .c-agent,
+    .c-model, .c-hero, .c-harness,
+    .c-markdown, .c-mcp, .c-skill, .c-designmd {
+      grid-column: auto; grid-row: auto;
+    }
+    .c-hero { grid-column: span 2; min-height: 150px; }
+  }
+
+  @media (max-width: 520px) {
+    .bento { grid-template-columns: 1fr; }
+    .c-hero { grid-column: auto; }
+    .modal { padding: 32px 22px 28px; }
+  }
+
+  /* ── Dark mode ── */
+  html.dark {
+    --canvas:   #1B365D;
+    --card:     #1e3d6b;
+    --card-alt: #1a3560;
+    --border:   rgba(245,244,237,.14);
+    --ink:      #f5f4ed;
+    --ink-mid:  #c5d4e8;
+    --ink-soft: #8aabcb;
+    --muted:    #7a9bb8;
+    --shadow:       0 2px 12px rgba(0,0,0,.3),  0 1px 3px rgba(0,0,0,.18);
+    --shadow-hover: 0 6px 28px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.25);
+  }
+
+  .theme-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--muted);
+    transition: color var(--t), border-color var(--t);
+    justify-self: end;
+  }
+  .theme-toggle:hover { color: var(--ink); border-color: var(--ink-soft); }
+  .icon-sun { display: none; }
+  html.dark .icon-moon { display: none; }
+  html.dark .icon-sun  { display: block; }
+</style>
+<script>if(localStorage.getItem('theme')==='dark'||sessionStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark');</script>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="site-logo">Ctrl + Vibe</a>
+  <nav class="site-nav">
+    <a href="foundations.html" class="active">Foundations</a>
+    <a href="concepts.html">Concepts</a>
+    <a href="vibe-check.html">Vibe Check</a>
+    <a href="play.html">Play</a>
+  </nav>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 256 256" fill="currentColor"><path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23ZM188.9,190.34A88,88,0,0,1,65.66,67.11a89,89,0,0,1,31.4-26A106.08,106.08,0,0,0,96,56,104.11,104.11,0,0,0,200,160a106.08,106.08,0,0,0,14.92-1.06A89,89,0,0,1,188.9,190.34Z"/></svg>
+    <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 256 256" fill="currentColor"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></svg>
+  </button>
+</header>
+
+<div class="bento">
+
+  <!-- Context window -->
+  <div class="card c-context" onclick="openModal('context')">
+    <span class="card-hint">Read more</span>
+    <div class="card-icon"><i class="ph-duotone ph-chat-circle-dots"></i></div>
+    <div class="card-title">Context window</div>
+    <div class="card-desc">The total span of input that a model can consider at once.</div>
+  </div>
+
+  <!-- LLM -->
+  <div class="card c-llm" onclick="openModal('llm')">
+    <span class="card-hint">Read more</span>
+    <div class="card-icon"><i class="ph-duotone ph-brain"></i></div>
+    <div class="card-title">LLM</div>
+    <div class="card-subtitle">Large Language Model</div>
+  </div>
+
+  <!-- GenAI -->
+  <div class="card c-genai" onclick="openModal('genai')">
+    <span class="card-hint">Read more</span>
+    <div class="card-icon"><i class="ph-duotone ph-sparkle"></i></div>
+    <div class="card-title">GenAI</div>
+    <div class="card-subtitle">Generative AI</div>
+  </div>
+
+  <!-- Agent -->
+  <div class="card c-agent" onclick="openModal('agent')">
+    <span class="card-hint">Read more</span>
+    <div class="card-icon"><i class="ph-duotone ph-robot"></i></div>
+    <div class="card-title">Agent</div>
+    <div class="card-desc">Autonomous helper that perceives, decides, and takes action to achieve goals.</div>
+  </div>
+
+  <!-- Model -->
+  <div class="card c-model" onclick="openModal('model')">
+    <span class="card-hint">Read more</span>
+    <div class="card-icon"><i class="ph-duotone ph-cube"></i></div>
+    <div class="card-title">Model</div>
+    <div class="card-desc">The underlying system that generates predictions.</div>
+  </div>
+
+  <!-- HERO — centred, spans cols 2–3 -->
+  <div class="card c-hero">
+    <div class="hero-title">
+      Foundations
+      <span>Vibe Coding</span>
+    </div>
+  </div>
+
+  <!-- Harness -->
+  <div class="card c-harness" onclick="openModal('harness')">
+    <span class="card-hint">Read more</span>
+    <div class="card-icon"><i class="ph-duotone ph-tree-structure"></i></div>
+    <div class="card-title">Harness</div>
+    <div class="card-desc">Tools and workflows that orchestrate models at scale.</div>
+  </div>
+
+  <!-- Markdown -->
+  <div class="card c-markdown" onclick="openModal('markdown')">
+    <span class="card-hint">Read more</span>
+    <div class="card-icon"><i class="ph-duotone ph-article"></i></div>
+    <div class="card-title">Markdown</div>
+    <div class="card-desc">Simple syntax for structured, readable content.</div>
+  </div>
+
+  <!-- MCP -->
+  <div class="card c-mcp" onclick="openModal('mcp')">
+    <span class="card-hint">Read more</span>
+    <div class="card-icon"><i class="ph-duotone ph-plugs"></i></div>
+    <div class="card-title">MCP</div>
+    <div class="card-subtitle">Model Context Protocol</div>
+  </div>
+
+  <!-- Skill -->
+  <div class="card c-skill" onclick="openModal('skill')">
+    <span class="card-hint">Read more</span>
+    <div class="card-icon"><i class="ph-duotone ph-star-four"></i></div>
+    <div class="card-title">Skill</div>
+    <div class="card-desc">A learned capability you can apply reliably.</div>
+  </div>
+
+  <!-- design.md -->
+  <div class="card c-designmd" onclick="openModal('designmd')">
+    <span class="card-hint">Read more</span>
+    <div class="card-icon"><i class="ph-duotone ph-note-pencil"></i></div>
+    <div class="card-title">design.md</div>
+    <div class="card-desc">Design notes that align ideas, decisions, and direction.</div>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="backdrop" onclick="handleBackdropClick(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon"><i id="modal-ph-icon" class="ph-duotone"></i></div>
+    <div class="modal-eyebrow" id="modal-eyebrow"></div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const concepts = {
+  context: {
+    icon: 'ph-chat-circle-dots',
+    eyebrow: 'Concept',
+    title: 'Context window',
+    body: `<p>The <strong>context window</strong> is the maximum amount of text — measured in tokens — that a model can "see" and reason over in a single pass. Think of it as the model's working memory.</p><p>Everything you send in a prompt, plus the conversation history, plus the model's reply, must fit inside this window. When content exceeds the limit, older information is either truncated or compressed.</p><p>Modern frontier models support windows from 32K to over 1M tokens, enabling entire codebases or long documents to be reasoned over in one shot.</p>`,
+    tags: ['Tokens', 'Memory', 'Prompt engineering']
+  },
+  llm: {
+    icon: 'ph-brain',
+    eyebrow: 'Concept',
+    title: 'Large Language Model',
+    body: `<p>An <strong>LLM</strong> is a neural network trained on vast amounts of text to predict the next token in a sequence. Through this simple objective, models develop emergent capabilities: reasoning, translation, code generation, and more.</p><p>Scale is the key lever — more parameters and more data consistently unlock new abilities. GPT-4, Claude, and Gemini are all LLMs, each with different architectures, training data, and alignment approaches.</p>`,
+    tags: ['Neural network', 'Transformers', 'Tokens', 'Pre-training']
+  },
+  genai: {
+    icon: 'ph-sparkle',
+    eyebrow: 'Concept',
+    title: 'Generative AI',
+    body: `<p><strong>Generative AI</strong> refers to models that produce new content — text, images, audio, code, video — rather than simply classifying or labeling existing data.</p><p>LLMs are one category of GenAI. Diffusion models (Stable Diffusion, DALL-E) and audio models are others. What unites them: a model learns the distribution of training data well enough to sample plausible, novel outputs from it.</p><p>In vibe coding, GenAI is the engine — it turns intent into implementation.</p>`,
+    tags: ['Text', 'Images', 'Audio', 'Code generation']
+  },
+  agent: {
+    icon: 'ph-robot',
+    eyebrow: 'Architecture',
+    title: 'Agent',
+    body: `<p>An <strong>agent</strong> is an LLM that operates in a loop: it <em>perceives</em> its environment (context, tool outputs, memory), <em>plans</em> what to do next, then <em>acts</em> by calling tools or producing outputs.</p><p>Unlike a single prompt-response, agents can run multi-step tasks autonomously — searching the web, writing and executing code, editing files — until a goal is reached or they need human input.</p><p>Claude Code is an agent. The loop continues until the task is done.</p>`,
+    tags: ['Perceive', 'Plan', 'Act', 'Tool use', 'Autonomy']
+  },
+  model: {
+    icon: 'ph-cube',
+    eyebrow: 'Concept',
+    title: 'Model',
+    body: `<p>A <strong>model</strong> is a mathematical function — billions of learned parameters — that maps an input (your prompt) to an output (a response). It's the core prediction engine.</p><p>Models come in families (GPT, Claude, Gemini, Llama) with variants trading off speed, cost, and capability. Choosing the right model for a task is a key vibe coding skill: a fast small model for simple rewrites, a frontier model for complex reasoning.</p>`,
+    tags: ['Parameters', 'Inference', 'Fine-tuning', 'Benchmarks']
+  },
+  harness: {
+    icon: 'ph-tree-structure',
+    eyebrow: 'Infrastructure',
+    title: 'Harness',
+    body: `<p>A <strong>harness</strong> is the scaffolding around a model: the system prompt, tool definitions, memory management, loop logic, and UI that turn a raw model into a useful product.</p><p>Claude Code's harness handles conversation history, file access, bash execution, and permission checks — so the model can focus on reasoning rather than plumbing. A good harness makes agents reliable, safe, and steerable.</p>`,
+    tags: ['System prompt', 'Orchestration', 'Tools', 'Memory']
+  },
+  markdown: {
+    icon: 'ph-article',
+    eyebrow: 'Format',
+    title: 'Markdown',
+    body: `<p><strong>Markdown</strong> is a lightweight markup language: a few simple characters (#, *, \`, >) produce structured, readable documents that render beautifully in any modern tool.</p><p>In vibe coding, Markdown is the lingua franca for prompts, documentation, design notes, and AI-generated content. Writing clear Markdown is a core skill — models are trained on it and respond better to well-structured input.</p>`,
+    tags: ['Syntax', 'Documentation', 'Prompts', 'Readability']
+  },
+  mcp: {
+    icon: 'ph-plugs',
+    eyebrow: 'Protocol',
+    title: 'Model Context Protocol',
+    body: `<p><strong>MCP</strong> is an open standard that lets AI models talk to external tools, APIs, and data sources through a common interface. Think of it as USB-C for AI integrations.</p><p>Instead of every app building custom integrations for every model, MCP defines one protocol. Connect an MCP server for Slack, Linear, or a database — and any MCP-compatible AI (Claude, Cursor, etc.) can use it immediately. This is how vibe coders extend agents beyond the terminal.</p>`,
+    tags: ['Protocol', 'Tools', 'APIs', 'Interoperability']
+  },
+  skill: {
+    icon: 'ph-star-four',
+    eyebrow: 'Capability',
+    title: 'Skill',
+    body: `<p>A <strong>skill</strong> is a packaged, reusable AI capability — a prompt + instructions that reliably accomplish a specific task when invoked. Skills let you encode your best workflows and apply them consistently.</p><p>In Claude Code, skills are slash commands: /review, /humanizer, /pdf. Each encapsulates expertise so you don't re-engineer the same prompt every time. Good skills are composable, predictable, and improvable over time.</p>`,
+    tags: ['Reusability', 'Slash commands', 'Workflows', 'Prompts']
+  },
+  designmd: {
+    icon: 'ph-note-pencil',
+    eyebrow: 'Artifact',
+    title: 'design.md',
+    body: `<p>A <strong>design.md</strong> is a lightweight design document — a Markdown file that captures intent, decisions, and direction for a project or feature before any code is written.</p><p>In vibe coding, it replaces heavyweight specs. You write what you want, why you want it, and any constraints. The AI reads it as context, stays aligned with your vision, and can reference it throughout a long session. Thinking in writing before coding makes AI collaboration dramatically more effective.</p>`,
+    tags: ['Documentation', 'Specification', 'Context', 'Alignment']
+  }
+};
+
+function openModal(key) {
+  const c = concepts[key];
+  if (!c) return;
+  const iconEl = document.getElementById('modal-ph-icon');
+  iconEl.className = `ph-duotone ${c.icon}`;
+  document.getElementById('modal-eyebrow').textContent = c.eyebrow;
+  document.getElementById('modal-title').textContent = c.title;
+  document.getElementById('modal-body').innerHTML = c.body;
+  document.getElementById('backdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('backdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleBackdropClick(e) {
+  if (e.target === document.getElementById('backdrop')) closeModal();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function toggleTheme() {
+  const dark = document.documentElement.classList.toggle('dark');
+  const theme = dark ? 'dark' : 'light';
+  try { localStorage.setItem('theme', theme); } catch(e) {}
+  sessionStorage.setItem('theme', theme);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Play — Ctrl + Vibe</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
+
+  :root {
+    --canvas: #f5f4ed;
+    --ink:    #1B365D;
+    --muted:  #8a8478;
+    --border: #d6d3c8;
+    --serif:  'EB Garamond', Charter, 'Bitstream Charter', Georgia, serif;
+    --t: 200ms ease;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--canvas);
+    font-family: var(--serif);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+  }
+
+  .site-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 50;
+    background: var(--canvas);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 22px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .site-logo {
+    font-size: 13.5px;
+    font-weight: 500;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    user-select: none;
+  }
+
+  .site-nav { display: flex; align-items: center; gap: 2px; }
+
+  .site-nav a {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    transition: color var(--t), border-color var(--t);
+    letter-spacing: .01em;
+  }
+
+  .site-nav a:hover { color: var(--ink); }
+
+  .site-nav a.active {
+    color: var(--ink);
+    border-color: var(--border);
+  }
+
+  .saying {
+    font-size: 42px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--ink);
+    line-height: 1.2;
+    text-align: center;
+    max-width: 640px;
+  }
+
+  /* ── Dark mode ── */
+  html.dark {
+    --canvas: #1B365D;
+    --ink:    #f5f4ed;
+    --muted:  #7a9bb8;
+    --border: rgba(245,244,237,.14);
+  }
+
+  .theme-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--muted);
+    transition: color var(--t), border-color var(--t);
+    justify-self: end;
+  }
+  .theme-toggle:hover { color: var(--ink); border-color: var(--muted); }
+  .icon-sun { display: none; }
+  html.dark .icon-moon { display: none; }
+  html.dark .icon-sun  { display: block; }
+</style>
+<script>if(localStorage.getItem('theme')==='dark'||sessionStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark');</script>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="site-logo">Ctrl + Vibe</a>
+  <nav class="site-nav">
+    <a href="foundations.html">Foundations</a>
+    <a href="concepts.html">Concepts</a>
+    <a href="vibe-check.html">Vibe Check</a>
+    <a href="play.html" class="active">Play</a>
+  </nav>
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 256 256" fill="currentColor"><path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23ZM188.9,190.34A88,88,0,0,1,65.66,67.11a89,89,0,0,1,31.4-26A106.08,106.08,0,0,0,96,56,104.11,104.11,0,0,0,200,160a106.08,106.08,0,0,0,14.92-1.06A89,89,0,0,1,188.9,190.34Z"/></svg>
+    <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 256 256" fill="currentColor"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></svg>
+  </button>
+</header>
+
+<p class="saying">The only rule is that you start.</p>
+
+<script>
+function toggleTheme() {
+  const dark = document.documentElement.classList.toggle('dark');
+  const theme = dark ? 'dark' : 'light';
+  try { localStorage.setItem('theme', theme); } catch(e) {}
+  sessionStorage.setItem('theme', theme);
+}
+</script>
+</body>
+</html>
